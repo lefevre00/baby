@@ -1,5 +1,6 @@
 package com.example.michael.myapplication;
 
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
@@ -14,8 +15,8 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 
 import com.example.michael.myapplication.baby.BabyPhone;
-import com.example.michael.myapplication.parent.ParentPhone;
-import com.example.michael.myapplication.server.NanoHttpServer;
+import com.example.michael.myapplication.services.*;
+import com.example.michael.myapplication.services.ParentService;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -34,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ParentService.Companion.start(this);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -66,13 +68,7 @@ public class MainActivity extends AppCompatActivity {
         radioParent.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        new ParentPhone(getApplicationContext()).publish().lookForChild();
-                    }
-                }).start();
+                ParentService.Companion.listen(getApplicationContext());
             }
         });
 

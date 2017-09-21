@@ -2,6 +2,8 @@ package com.example.michael.myapplication;
 
 import android.app.Application;
 
+import com.example.michael.myapplication.services.ParentService;
+
 import timber.log.Timber;
 
 public class MyApplication extends Application {
@@ -11,5 +13,11 @@ public class MyApplication extends Application {
         if (BuildConfig.DEBUG) {
             Timber.plant(new Timber.DebugTree());
         }
+    }
+
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+        ParentService.Companion.stop(getApplicationContext());
     }
 }
