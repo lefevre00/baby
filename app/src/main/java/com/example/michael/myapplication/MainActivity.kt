@@ -10,59 +10,46 @@ import android.os.AsyncTask
 import android.os.Bundle
 import android.os.IBinder
 import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.SwitchCompat
 import android.support.v7.widget.Toolbar
 import android.text.format.Formatter
-import android.widget.CompoundButton
-import android.widget.TextView
-
 import com.example.michael.myapplication.services.ChildService
 import com.example.michael.myapplication.services.ParentService
-
-import java.net.InetAddress
+import kotlinx.android.synthetic.main.fragment_main.*
+import timber.log.Timber
 import java.net.NetworkInterface
 import java.net.SocketException
-import java.util.Enumeration
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.fragment_main.*
-
-import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {
 
-    private var wifiAdressTv: TextView? = null
-    private var otherAdressTv: TextView? = null
     private var mParentServiceBound = false
     private var mChildServiceBound = false
     internal var mParentService: ParentService? = null
     internal var mChildService: ChildService? = null
-//    private var switchParent: SwitchCompat? = null
-//    private var switchChild: SwitchCompat? = null
 
     private val mParentConnection = object : ServiceConnection {
-        override fun onServiceConnected(className: ComponentName, service: IBinder) {
-            Timber.d("Connected parent service " + className.className)
+        override fun onServiceConnected(name: ComponentName, service: IBinder) {
+            Timber.d("Connected parent service ${name.className}")
             val binder = service as ParentService.ParentServiceBinder
             mParentService = binder.service
             mParentServiceBound = true
         }
 
         override fun onServiceDisconnected(name: ComponentName) {
-            Timber.d("Disconnected from parent service " + name.className)
+            Timber.d("Disconnected from parent service ${name.className}")
             mParentServiceBound = false
         }
     }
 
     private val mChildConnection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
-            Timber.d("Connected to child service \$className")
+            Timber.d("Connected to child service $className")
             val binder = service as ChildService.ChildServiceBinder
             mChildService = binder.service
             mChildServiceBound = true
         }
 
         override fun onServiceDisconnected(className: ComponentName) {
-            Timber.d("Disconnected from child service \$className")
+            Timber.d("Disconnected from child service $className")
             mChildServiceBound = false
         }
     }
@@ -73,10 +60,7 @@ class MainActivity : AppCompatActivity() {
         val toolbar = findViewById(R.id.toolbar) as Toolbar
         setSupportActionBar(toolbar)
 
-        wifiAdressTv = findViewById(R.id.wifi_adress) as TextView
-        otherAdressTv = findViewById(R.id.other_adress) as TextView
-
-        switchParent!!.setOnCheckedChangeListener { buttonView, isChecked ->
+        switchParent!!.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 mParentService?.register()
             } else {
@@ -84,7 +68,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        switchChild!!.setOnCheckedChangeListener { buttonView, isChecked ->
+        switchChild!!.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 // TODO we need to be sure parent service is stopped before launching another service
                 mChildService?.listen()
@@ -127,7 +111,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onPostExecute(adress: String?) {
-                wifiAdressTv!!.text = adress ?: "Echec"
+                wifi_adress.text = adress ?: "Echec"
             }
         }.execute()
 
@@ -143,7 +127,7 @@ class MainActivity : AppCompatActivity() {
                             val inetAddress = enumIpAddr.nextElement()
                             if (!inetAddress.isLoopbackAddress) {
                                 val ip = Formatter.formatIpAddress(inetAddress.hashCode())
-                                Timber.d("Other adress : %SERVICE_NAME", ip)
+                                Timber.d("Other adress : $ip")
                                 return ip
                             }
                         }
@@ -157,7 +141,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onPostExecute(adress: String?) {
-                otherAdressTv!!.text = adress ?: "Echec"
+                other_adress.text = adress ?: "Echec"
             }
         }.execute()
     }
