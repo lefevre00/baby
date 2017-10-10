@@ -86,6 +86,7 @@ class MainActivity : AppCompatActivity() {
 
         switchChild!!.setOnCheckedChangeListener { buttonView, isChecked ->
             if (isChecked) {
+                // TODO we need to be sure parent service is stopped before launching another service
                 mChildService?.listen()
             } else {
                 mChildService?.terminate()
