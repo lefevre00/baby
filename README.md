@@ -1,5 +1,4 @@
-# baby
-Simple baby phone android app
+Simple baby phone android app, not available on any store.
 
 Writen in Kotlin to pratice.
 
