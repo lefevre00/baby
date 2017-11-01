@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name">Do You Sleep</string>
     <string name="action_settings">Settings</string>
     <string name="roleParent">Recepteur</string>
     <string name="roleChild">Emetteur</string>
