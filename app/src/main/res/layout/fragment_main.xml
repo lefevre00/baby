@@ -9,6 +9,46 @@
     tools:showIn="@layout/activity_main">
 
 
+    <com.example.michael.myapplication.view.RoleButton
+        android:id="@+id/toggleBaby"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="@color/colorAccent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/toggleParent"
+        app:layout_constraintHorizontal_bias="0.75"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:text="@string/roleChild"
+        android:src="@drawable/ic_child_care_black_48dp"
+        android:tint="@android:color/white"
+        android:tintMode="src_in"/>
+
+    <com.example.michael.myapplication.view.RoleButton
+        android:id="@+id/toggleParent"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="@color/colorAccent"
+        android:text="@string/roleParent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/toggleBaby"
+        app:layout_constraintTop_toTopOf="parent"
+        android:src="@drawable/ic_hearing_black_48dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginLeft="8dp"
+        android:tint="@android:color/white"
+        android:tintMode="src_in"/>
+
+
     <android.support.v7.widget.SwitchCompat
         android:id="@+id/switchParent"
         android:layout_width="wrap_content"

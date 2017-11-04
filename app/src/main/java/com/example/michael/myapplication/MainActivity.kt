@@ -4,20 +4,14 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
-import android.net.ConnectivityManager
-import android.net.wifi.WifiManager
-import android.os.AsyncTask
 import android.os.Bundle
 import android.os.IBinder
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
-import android.text.format.Formatter
 import com.example.michael.myapplication.services.ChildService
 import com.example.michael.myapplication.services.ParentService
 import kotlinx.android.synthetic.main.fragment_main.*
 import timber.log.Timber
-import java.net.NetworkInterface
-import java.net.SocketException
 
 class MainActivity : AppCompatActivity() {
 
@@ -32,6 +26,8 @@ class MainActivity : AppCompatActivity() {
             val binder = service as ParentService.ParentServiceBinder
             mParentService = binder.service
             mParentServiceBound = true
+            toggleBaby.setStoppable(binder.service)
+            toggleParent.setStartable(binder.service)
         }
 
         override fun onServiceDisconnected(name: ComponentName) {
@@ -46,6 +42,8 @@ class MainActivity : AppCompatActivity() {
             val binder = service as ChildService.ChildServiceBinder
             mChildService = binder.service
             mChildServiceBound = true
+            toggleBaby.setStartable(binder.service)
+            toggleParent.setStoppable(binder.service)
         }
 
         override fun onServiceDisconnected(className: ComponentName) {
@@ -57,32 +55,54 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val toolbar = findViewById(R.id.toolbar) as Toolbar
+        val toolbar:Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
         toolbar.title = getString(R.string.app_name)
 
-        switchParent!!.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                mParentService?.register()
-            } else {
-                mParentService?.unregister()
-            }
-        }
+//        toggleBaby.setServices(mChildService, mParentService)
+//        ;OnCheckedChangeListener({_, isChecked ->
+//            if (isChecked) {
+//                if (mParentService!!.isRunning()) {
+//                    Timber.d("ParentService running")
+//                    startEmitterASAP()
+//                } else {
+//                    mChildService?.listenBaby()
+//                }
+//            } else {
+//                mChildService?.stopListening()
+//                toggleBaby.setBackgroundColor(ContextCompat.getColor(this, android.R.color.darker_gray))
+//            }
+//        })
 
-        switchChild!!.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                // TODO we need to be sure parent service is stopped before launching another service
-                mChildService?.listen()
-            } else {
-                mChildService?.terminate()
-            }
-        }
+//        toggleParent.setOnCheckedChangeListener({_, isChecked ->
+//            if (isChecked) {
+//                if (mChildService!!.isRunning()) {
+//                    startReceiverASAP()
+//                } else {
+//                    mParentService?.register()
+//                }
+////                startReceiverOnEmitterStopped()
+//            } else {
+//                mParentService?.unregister()
+//            }
+//        })
 
-        //        new Thread(new Runnable() {
-        //            public void run() {
-        //                new NanoHttpServer().start();
-        //            }
-        //        }).start();
+//        switchParent!!.setOnCheckedChangeListener { _, isChecked ->
+//            if (isChecked) {
+//                mParentService?.start()
+//            } else {
+//                mParentService?.stop()
+//            }
+//        }
+//
+//        switchChild!!.setOnCheckedChangeListener { _, isChecked ->
+//            if (isChecked) {
+//                // TODO we need to be sure parent service is stopped before launching another service
+//                mChildService?.start()
+//            } else {
+//                mChildService?.stop()
+//            }
+//        }
     }
 
     override fun onStart() {

@@ -1,7 +1,5 @@
 package com.example.michael.myapplication.services
 
-import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdManager.RegistrationListener
@@ -11,11 +9,12 @@ import android.os.IBinder
 import timber.log.Timber
 import java.net.ServerSocket
 
-class ParentService : Service() {
+class ParentService : GenericService() {
 
     companion object {
-        var SERVICE_NAME = "ParentService"
-        val SERVICE_TYPE = "_babyphone._tcp"
+        val SERVICE_NAME = "ParentService"
+        val RECEIVER_STARTED = "RECEIVER_STARTED"
+        val RECEIVER_STOPPED = "RECEIVER_STOPPED"
     }
 
     // Binder given to clients
@@ -30,36 +29,43 @@ class ParentService : Service() {
         return mBinder
     }
 
-    private lateinit var nsdManager: NsdManager
-
     override fun onCreate() {
         super.onCreate()
         Timber.d("ParentService started")
-        nsdManager = getSystemService(Context.NSD_SERVICE) as NsdManager
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Timber.d("Service destroyed")
+        Timber.d("ParentService destroyed")
     }
 
     private var mRegistrationListener: RegistrationListener? = null
 
-    fun register() {
+    override fun start() {
+        if (isRunning()) {
+            Timber.d("$SERVICE_NAME already running")
+            return
+        }
+
         val serviceInfo = NsdServiceInfo()
         serviceInfo.serviceName = SERVICE_NAME
         serviceInfo.serviceType = SERVICE_TYPE
         serviceInfo.port = ServerSocket(0).localPort
 
-        nsdManager.registerService(serviceInfo, NsdManager.PROTOCOL_DNS_SD, createRegistrationListener())
+        mNsdManager.registerService(serviceInfo, NsdManager.PROTOCOL_DNS_SD, createRegistrationListener())
+    }
+
+    override fun isRunning(): Boolean {
+        return mRegistrationListener != null
     }
 
     private fun createRegistrationListener(): RegistrationListener? {
         return object : NsdManager.RegistrationListener {
 
             override fun onServiceRegistered(serviceInfo: NsdServiceInfo) {
-                Timber.d("Registered service ${serviceInfo.serviceName} on port ${serviceInfo.port}")
+                Timber.d("${serviceInfo.serviceName} registred on port ${serviceInfo.port}")
                 mRegistrationListener = this
+                broadcastManager.sendBroadcast(Intent(RECEIVER_STARTED))
             }
 
             override fun onRegistrationFailed(serviceInfo: NsdServiceInfo,
@@ -68,8 +74,9 @@ class ParentService : Service() {
             }
 
             override fun onServiceUnregistered(serviceInfo: NsdServiceInfo) {
-                Timber.d("Service ${serviceInfo.serviceName} unregistered")
+                Timber.d("${serviceInfo.serviceName} unregistred")
                 mRegistrationListener = null
+                broadcastManager.sendBroadcast(Intent(RECEIVER_STOPPED))
             }
 
             override fun onUnregistrationFailed(serviceInfo: NsdServiceInfo,
@@ -79,9 +86,21 @@ class ParentService : Service() {
         }
     }
 
-    fun unregister() {
+    override fun stop() {
         if (mRegistrationListener != null) {
-            nsdManager.unregisterService(mRegistrationListener)
+            mNsdManager.unregisterService(mRegistrationListener)
         }
+    }
+
+    override fun getName(): String {
+        return ChildService.SERVICE_NAME
+    }
+
+    override fun getStartAction(): String {
+        return RECEIVER_STARTED
+    }
+
+    override fun getStopAction(): String {
+        return RECEIVER_STOPPED
     }
 }

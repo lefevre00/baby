@@ -1,7 +1,5 @@
 package com.example.michael.myapplication.services
 
-import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
@@ -12,15 +10,17 @@ import android.os.Looper
 import timber.log.Timber
 
 
-class ChildService : Service() {
+class ChildService : GenericService() {
+
 
     companion object {
         val SERVICE_NAME = "ChildService"
+        val EMITTER_STARTED = "EMITTER_STARTED"
+        val EMITTER_STOPPED = "EMITTER_STOPPED"
     }
 
     private val mBinder = ChildServiceBinder()
     private var mHandler : Handler? = null
-    private lateinit var mNsdManager: NsdManager
     private var mDiscoveryListener: NsdManager.DiscoveryListener? = null
 
     inner class ChildServiceBinder : Binder() {
@@ -32,7 +32,6 @@ class ChildService : Service() {
         super.onCreate()
         Timber.d("$SERVICE_NAME started")
         mHandler = Handler(Looper.getMainLooper())
-        mNsdManager = applicationContext.getSystemService(Context.NSD_SERVICE) as NsdManager
     }
 
     override fun onDestroy() {
@@ -44,8 +43,12 @@ class ChildService : Service() {
         return mBinder
     }
 
-    fun listen() {
-        mNsdManager.discoverServices(ParentService.SERVICE_TYPE,
+    override fun start() {
+        if (isRunning()) {
+            Timber.d("$SERVICE_NAME already running")
+            return
+        }
+        mNsdManager.discoverServices(GenericService.SERVICE_TYPE,
                 NsdManager.PROTOCOL_DNS_SD, createDiscoveryListener())
     }
 
@@ -71,11 +74,13 @@ class ChildService : Service() {
             override fun onDiscoveryStarted(serviceType: String?) {
                 Timber.d("Start discovering service $serviceType ")
                 mDiscoveryListener = this
+                broadcastManager.sendBroadcast(Intent(EMITTER_STARTED))
             }
 
             override fun onDiscoveryStopped(serviceType: String?) {
                 Timber.d("Stop discovering service $serviceType ")
                 mDiscoveryListener = null
+                broadcastManager.sendBroadcast(Intent(EMITTER_STOPPED))
             }
 
             override fun onServiceLost(serviceInfo: NsdServiceInfo?) {
@@ -96,9 +101,25 @@ class ChildService : Service() {
       }
     }
 
-    fun terminate() {
+    override fun isRunning(): Boolean {
+        return mDiscoveryListener != null
+    }
+
+    override fun stop() {
         if (mDiscoveryListener != null) {
             mNsdManager.stopServiceDiscovery(mDiscoveryListener)
         }
+    }
+
+    override fun getName(): String {
+        return SERVICE_NAME
+    }
+
+    override fun getStartAction(): String {
+        return EMITTER_STARTED
+    }
+
+    override fun getStopAction(): String {
+        return EMITTER_STOPPED
     }
 }

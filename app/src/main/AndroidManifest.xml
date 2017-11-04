@@ -28,10 +28,12 @@
 
         <service
             android:name=".services.ChildService"
-            android:exported="false"/>
+            android:exported="false"
+            android:isolatedProcess="false"/>
         <service
             android:name=".services.ParentService"
-            android:exported="false"/>
+            android:exported="false"
+            android:isolatedProcess="false"/>
     </application>
 
 </manifest>
