@@ -14,9 +14,7 @@ class ChildService : GenericService() {
 
 
     companion object {
-        val SERVICE_NAME = "ChildService"
-        val EMITTER_STARTED = "EMITTER_STARTED"
-        val EMITTER_STOPPED = "EMITTER_STOPPED"
+        val SERVICE_NAME = "Kids"
     }
 
     private val mBinder = ChildServiceBinder()
@@ -43,11 +41,7 @@ class ChildService : GenericService() {
         return mBinder
     }
 
-    override fun start() {
-        if (isRunning()) {
-            Timber.d("$SERVICE_NAME already running")
-            return
-        }
+    override fun onStart() {
         mNsdManager.discoverServices(GenericService.SERVICE_TYPE,
                 NsdManager.PROTOCOL_DNS_SD, createDiscoveryListener())
     }
@@ -74,13 +68,13 @@ class ChildService : GenericService() {
             override fun onDiscoveryStarted(serviceType: String?) {
                 Timber.d("Start discovering service $serviceType ")
                 mDiscoveryListener = this
-                broadcastManager.sendBroadcast(Intent(EMITTER_STARTED))
+                broadcastManager.sendBroadcast(Intent(getStartAction()))
             }
 
             override fun onDiscoveryStopped(serviceType: String?) {
                 Timber.d("Stop discovering service $serviceType ")
                 mDiscoveryListener = null
-                broadcastManager.sendBroadcast(Intent(EMITTER_STOPPED))
+                broadcastManager.sendBroadcast(Intent(getStopAction()))
             }
 
             override fun onServiceLost(serviceInfo: NsdServiceInfo?) {
@@ -92,7 +86,7 @@ class ChildService : GenericService() {
     private fun createResolveListener(): NsdManager.ResolveListener? {
       return object : NsdManager.ResolveListener {
           override fun onResolveFailed(serviceInfo: NsdServiceInfo?, errorCode: Int) {
-              Timber.w("FAILED to resolve ${serviceInfo?.serviceName} ")
+              Timber.w("FAILED to resolve ${serviceInfo?.serviceName}, error $errorCode")
           }
 
           override fun onServiceResolved(serviceInfo: NsdServiceInfo?) {
@@ -105,7 +99,7 @@ class ChildService : GenericService() {
         return mDiscoveryListener != null
     }
 
-    override fun stop() {
+    override fun onStop() {
         if (mDiscoveryListener != null) {
             mNsdManager.stopServiceDiscovery(mDiscoveryListener)
         }
@@ -113,13 +107,5 @@ class ChildService : GenericService() {
 
     override fun getName(): String {
         return SERVICE_NAME
-    }
-
-    override fun getStartAction(): String {
-        return EMITTER_STARTED
-    }
-
-    override fun getStopAction(): String {
-        return EMITTER_STOPPED
     }
 }

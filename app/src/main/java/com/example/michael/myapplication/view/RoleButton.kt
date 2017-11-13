@@ -12,7 +12,6 @@ import android.widget.ImageButton
 import com.example.michael.myapplication.R
 import com.example.michael.myapplication.services.GenericService
 import timber.log.Timber
-import java.util.concurrent.atomic.AtomicBoolean
 
 class RoleButton : ImageButton {
 
@@ -24,7 +23,7 @@ class RoleButton : ImageButton {
         var registred = false
 
         override fun onReceive(context: Context?, intent: Intent?) {
-            Timber.d("${activable?.getName()} received intent ${intent?.action}")
+            Timber.d("Button ${activable?.getName()} received ${intent?.action}")
             if (registred && intent?.action.equals(unactivable?.getStopAction())) {
                 broadcastManager.unregisterReceiver(this)
                 registred = false
@@ -35,16 +34,16 @@ class RoleButton : ImageButton {
 
     var activable : GenericService? = null
     var unactivable : GenericService? = null
-    var checked : AtomicBoolean = AtomicBoolean(false)
+    var checked : Boolean = false
     val unactivableStoppedAction = UnactivableStopReceiver()
 
     private var broadcastManager: LocalBroadcastManager = LocalBroadcastManager.getInstance(context)
 
     init {
         setOnClickListener({
-            if (checked.get()) {
+            if (checked) {
                 activable?.stop()
-                checked.set(false)
+                checked = false
             } else {
                 if (unactivable?.isRunning()!!) {
                     unactivable?.stop()
@@ -52,16 +51,15 @@ class RoleButton : ImageButton {
                 } else {
                     startActivable()
                 }
-                checked.set(true)
+                checked = true
             }
             applyStatus()
         })
         applyStatus()
-
     }
 
     private fun applyStatus() {
-        background.setColorFilter(ContextCompat.getColor(context, if (checked.get()) R.color.colorAccent else R.color.colorPrimary), PorterDuff.Mode.MULTIPLY)
+        background.setColorFilter(ContextCompat.getColor(context, if (checked) R.color.colorAccent else R.color.colorPrimary), PorterDuff.Mode.MULTIPLY)
     }
 
     fun startActivable() {
@@ -70,15 +68,15 @@ class RoleButton : ImageButton {
 
     private fun activateOnBroadcast() {
         broadcastManager.registerReceiver(unactivableStoppedAction, IntentFilter(unactivable?.getStopAction()))
-//        unactivableStoppedAction.registred = true
+        unactivableStoppedAction.registred = true
     }
 
     inner class ServiceStatusReceiver(private val service: GenericService) : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-                Timber.d("Button for ${activable?.getName()} received action ${intent?.action}")
+            Timber.d("Button ${activable?.getName()} received ${intent?.action}")
             when (intent?.action) {
-                service.getStopAction() -> checked.set(false)
-                else -> Timber.d("Action not handled : ${intent?.action}")
+                service.getStopAction() -> checked = false
+                else -> Timber.d("Button ${activable?.getName()} do not handled ${intent?.action}")
             }
             applyStatus()
         }

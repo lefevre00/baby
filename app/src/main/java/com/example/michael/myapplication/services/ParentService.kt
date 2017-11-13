@@ -12,9 +12,7 @@ import java.net.ServerSocket
 class ParentService : GenericService() {
 
     companion object {
-        val SERVICE_NAME = "ParentService"
-        val RECEIVER_STARTED = "RECEIVER_STARTED"
-        val RECEIVER_STOPPED = "RECEIVER_STOPPED"
+        val SERVICE_NAME = "Parents"
     }
 
     // Binder given to clients
@@ -41,12 +39,7 @@ class ParentService : GenericService() {
 
     private var mRegistrationListener: RegistrationListener? = null
 
-    override fun start() {
-        if (isRunning()) {
-            Timber.d("$SERVICE_NAME already running")
-            return
-        }
-
+    override fun onStart() {
         val serviceInfo = NsdServiceInfo()
         serviceInfo.serviceName = SERVICE_NAME
         serviceInfo.serviceType = SERVICE_TYPE
@@ -65,7 +58,7 @@ class ParentService : GenericService() {
             override fun onServiceRegistered(serviceInfo: NsdServiceInfo) {
                 Timber.d("${serviceInfo.serviceName} registred on port ${serviceInfo.port}")
                 mRegistrationListener = this
-                broadcastManager.sendBroadcast(Intent(RECEIVER_STARTED))
+                broadcastManager.sendBroadcast(Intent(getStartAction()))
             }
 
             override fun onRegistrationFailed(serviceInfo: NsdServiceInfo,
@@ -76,7 +69,7 @@ class ParentService : GenericService() {
             override fun onServiceUnregistered(serviceInfo: NsdServiceInfo) {
                 Timber.d("${serviceInfo.serviceName} unregistred")
                 mRegistrationListener = null
-                broadcastManager.sendBroadcast(Intent(RECEIVER_STOPPED))
+                broadcastManager.sendBroadcast(Intent(getStopAction()))
             }
 
             override fun onUnregistrationFailed(serviceInfo: NsdServiceInfo,
@@ -86,21 +79,13 @@ class ParentService : GenericService() {
         }
     }
 
-    override fun stop() {
+    override fun onStop() {
         if (mRegistrationListener != null) {
             mNsdManager.unregisterService(mRegistrationListener)
         }
     }
 
     override fun getName(): String {
-        return ChildService.SERVICE_NAME
-    }
-
-    override fun getStartAction(): String {
-        return RECEIVER_STARTED
-    }
-
-    override fun getStopAction(): String {
-        return RECEIVER_STOPPED
+        return SERVICE_NAME
     }
 }
