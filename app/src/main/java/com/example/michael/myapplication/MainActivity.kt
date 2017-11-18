@@ -6,8 +6,13 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import com.example.michael.myapplication.network.NetworkManager
 import com.example.michael.myapplication.services.ChildService
 import com.example.michael.myapplication.services.ParentService
 import kotlinx.android.synthetic.main.fragment_main.*
@@ -75,5 +80,25 @@ class MainActivity : AppCompatActivity() {
         if (mChildServiceBound) {
             unbindService(mChildConnection)
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        val menuInflater: MenuInflater = getMenuInflater()
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        if (item != null) {
+            if (item.itemId == R.id.networkInfo) showNetworkDialog()
+        }
+        return true
+    }
+
+    private fun showNetworkDialog() {
+        AlertDialog.Builder(this)
+                .setMessage(NetworkManager(this).info() ?: getString(R.string.disconnected))
+                .setTitle(getString(R.string.dialog_title_info))
+                .show()
     }
 }
