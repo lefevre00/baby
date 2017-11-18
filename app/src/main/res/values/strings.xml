@@ -4,4 +4,11 @@
     <string name="roleParent">Recepteur</string>
     <string name="roleChild">Emetteur</string>
     <string name="child">Bébé</string>
+    <string name="dialog_title_info">Informations</string>
+    <string name="network_info">Network Info</string>
+    <string name="no_wifi_connection">No wifi connection</string>
+    <string name="not_attributed">N/A</string>
+    <string name="wifi_two_dots">Wifi connection :</string>
+    <string name="wan_two_dots">Wan connection :</string>
+    <string name="disconnected">Déconnecté</string>
 </resources>
